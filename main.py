@@ -1,3 +1,4 @@
+import json
 import os
 
 from flask import Flask, request, abort
@@ -39,9 +40,12 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=event.message.text))
+    group_id_to_repost = os.environ['TARGET_GROUP_ID']
+    message_source = json.loads(str(event.source))
+    if 'groupId' in message_source and message_source['groupId'] == group_id_to_repost:
+        line_bot_api.broadcast(
+            TextSendMessage(text=event.message.text)
+        )
 
 
 if __name__ == "__main__":
